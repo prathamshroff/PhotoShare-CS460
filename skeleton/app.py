@@ -76,21 +76,25 @@ def new_page_function():
 	return new_page_html
 '''
 
-@app.route('/addfriend', methods=['GET', 'POST'])
+@app.route('/friends', methods=['GET', 'POST'])
 @flask_login.login_required
 def add_friend():
+	cursor = conn.cursor()
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor.execute("SELECT email FROM Users WHERE user_id IN (SELECT friend_id FROM Friends WHERE user_id = '{0}')".format(uid))
+	currentFriendList = cursor.fetchall()
 	if request.method == 'POST':
-		uid = getUserIdFromEmail(flask_login.current_user.id)
 		friendEmail = request.form.get('friendEmail')
 		cursor = conn.cursor()
 		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(friendEmail))
 		friend_id = cursor.fetchall()[0][0]
 		cursor.execute("INSERT INTO Friends(user_id, friend_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
+		cursor.execute("INSERT INTO Friends(friend_id, user_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
 		conn.commit()
 		return render_template('hello.html', name=flask_login.current_user.id, message='Friend Added!')
 	#The method is GET so we return a  HTML form to add the friend.
 	else:
-		return render_template('addfriend.html')
+		return render_template('friends.html', currentFriendList = currentFriendList)
 
 
 
@@ -143,18 +147,19 @@ def register_user():
 	try:
 		email=request.form.get('email')
 		password=request.form.get('password')
-		firstname=request.form.get('firstname')
-		lastname=request.form.get('lastname')
+		firstName=request.form.get('firstName')
+		lastName=request.form.get('lastName')
 		hometown=request.form.get('hometown')
 		gender=request.form.get('gender')
-		birthdate = request.form.get('birthdate')
+		gender = str(gender)
+		dateOfBirth = request.form.get('dateOfBirth')
 	except:
 		print("couldn't find all tokens") #this prints to shell, end users will not see this (all print statements go to shell)
 		return flask.redirect(flask.url_for('register'))
 	cursor = conn.cursor()
 	test =  isEmailUnique(email)
 	if test:
-		print(cursor.execute("INSERT INTO Users (email, password) VALUES ('{0}', '{1}')".format(email, password)))
+		print(cursor.execute("INSERT INTO Users (email, password, firstName, lastName, hometown, gender, dateOfBirth) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(email, password, firstName, lastName, hometown, gender, dateOfBirth)))
 		conn.commit()
 		#log user in
 		user = User()
@@ -163,6 +168,7 @@ def register_user():
 		return render_template('hello.html', name=email, message='Account Created!')
 	else:
 		print("couldn't find all tokens")
+		return render_template('register.html', supress='False')
 		return flask.redirect(flask.url_for('register'))
 
 def getUsersPhotos(uid):

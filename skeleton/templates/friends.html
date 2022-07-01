@@ -1,0 +1,27 @@
+<!-- author pratham shroff (pshroff@bu.edu) -->
+<head>
+    <title>Add a Friend!</title>
+</head>
+    
+<body>
+    <div class="title">
+        <h1>Add a friend on Photoshare</h1>
+    </div>
+        <form method="post" enctype="multipart/form-data" action="/friends">
+            <label for="caption">Friend's email:</label>
+            <input type="email" name="friendEmail" required='true' />
+            <input type="submit" value="Add" />
+        </form>
+
+    {% if currentFriendList %}
+    <div class="title">
+        <h1>See current friends on Photoshare</h1>
+    </div>
+    <ul>
+        {% for friend in currentFriendList %}
+            <li><h3> {{friend[0]}}</h3></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+</body>

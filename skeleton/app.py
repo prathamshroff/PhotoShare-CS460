@@ -23,7 +23,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Ela123456'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'p301102s'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -75,6 +75,26 @@ A new page looks like this:
 def new_page_function():
 	return new_page_html
 '''
+
+@app.route('/addfriend', methods=['GET', 'POST'])
+@flask_login.login_required
+def add_friend():
+	if request.method == 'POST':
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		friendEmail = request.form.get('friendEmail')
+		cursor = conn.cursor()
+		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(friendEmail))
+		friend_id = cursor.fetchall()[0][0]
+		cursor.execute("INSERT INTO Friends(user_id, friend_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
+		conn.commit()
+		return render_template('hello.html', name=flask_login.current_user.id, message='Friend Added!')
+	#The method is GET so we return a  HTML form to add the friend.
+	else:
+		return render_template('addfriend.html')
+
+
+
+#Given routes and code below
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

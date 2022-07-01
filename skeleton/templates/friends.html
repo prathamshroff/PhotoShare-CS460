@@ -1,17 +1,27 @@
 <!-- author pratham shroff (pshroff@bu.edu) -->
+<!doctype html>
+
+{% if message %}
+  <h4>{{message}}!</h4>
+{% endif %}
+
 <head>
     <title>Add a Friend!</title>
 </head>
     
 <body>
+
+    <!--
     <div class="title">
         <h1>Add a friend on Photoshare</h1>
     </div>
         <form method="post" enctype="multipart/form-data" action="/friends">
-            <label for="caption">Friend's email:</label>
+            <label for="friendEmail">Friend's email:</label>
             <input type="email" name="friendEmail" required='true' />
             <input type="submit" value="Add" />
         </form>
+
+    -->
 
     {% if currentFriendList %}
     <div class="title">
@@ -22,6 +32,35 @@
             <li><h3> {{friend[0]}}</h3></li>
         {% endfor %}
     </ul>
+
+    <!--
+    <div class="title">
+        <h1>Remove a friend</h1>
+    </div>
+    <form method="POST2" enctype="multipart/form-data" action="/friends">
+        <label for="removeFriendEmail">Friend's email:</label>
+        <input type="email" name="removeFriendEmail" required='true' />
+        <input type="submit" value="Unfriend" />
+    </form> -->
     {% endif %}
+
+    <div class="title">
+        <h1>Add/Remove a friend on Photoshare</h1>
+    </div>
+        <form method="post" enctype="multipart/form-data" action="/friends">
+            
+            <label for="action">Action:</label>
+            <input type="radio" id="Add" name="action" value="Add">
+            <label for="action">Add</label>
+            <input type="radio" id="Remove" name="action" value="Remove">
+            <label for="action">Remove</label><br>
+
+            <label for="friendEmail">Friend's email:</label>
+            <input type="email" name="friendEmail" required='true' /><br>
+
+            <input type="submit" value="Submit" />
+        </form>
+
+
 
 </body>

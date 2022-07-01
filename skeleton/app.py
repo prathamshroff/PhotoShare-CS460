@@ -79,6 +79,27 @@ def new_page_function():
 def accountExists():
 	return render_template('accountExists.html')
 
+@app.route('/delete_user', methods=['GET', 'POST'])
+@flask_login.login_required
+def delete_user():
+	if request.method == 'POST':
+		cursor = conn.cursor()
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+
+		conf_email = request.form.get('conf_email')
+		cursor = conn.cursor()
+		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(conf_email))
+		conf_id = cursor.fetchall()[0][0]
+
+		if uid == conf_id:
+			cursor.execute("DELETE FROM Users WHERE user_id = '{0}'".format(uid))
+			conn.commit()
+			return render_template('hello.html', message='Profile & Account Deleted!')
+
+	#The method is GET so we return a HTML form to delete user.
+	else:
+		return render_template('delete_user.html')
+
 @app.route('/friends', methods=['GET', 'POST'])
 @flask_login.login_required
 def add_friend():
@@ -86,16 +107,38 @@ def add_friend():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	cursor.execute("SELECT email FROM Users WHERE user_id IN (SELECT friend_id FROM Friends WHERE user_id = '{0}')".format(uid))
 	currentFriendList = cursor.fetchall()
+	
 	if request.method == 'POST':
 		friendEmail = request.form.get('friendEmail')
 		cursor = conn.cursor()
 		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(friendEmail))
 		friend_id = cursor.fetchall()[0][0]
-		cursor.execute("INSERT INTO Friends(user_id, friend_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
-		cursor.execute("INSERT INTO Friends(friend_id, user_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
-		conn.commit()
-		return render_template('hello.html', name=flask_login.current_user.id, message='Friend Added!')
-	#The method is GET so we return a  HTML form to add the friend.
+
+		# edge case - trying to add/remove yourself
+		if uid == friend_id:
+			return render_template('friends.html', name=flask_login.current_user.id, message="You cannot friend/unfriend yourself!")
+
+		action=request.form.get('action')
+		action = str(action)
+		if action == 'Add':
+			cursor.execute("INSERT INTO Friends(user_id, friend_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
+			cursor.execute("INSERT INTO Friends(friend_id, user_id) VALUES ('{0}', '{1}')".format(uid, friend_id))
+			conn.commit()
+			return render_template('hello.html', name=flask_login.current_user.id, message='Friend Added!')
+
+		elif action == 'Remove':
+
+			# edge case - tryinhg to remove someone who is not yet friend
+			if friend_id not in currentFriendList:
+				return render_template('friends.html', name=flask_login.current_user.id, message="You cannot unfriend someone who is not your friend!")
+
+			cursor.execute("DELETE FROM Friends WHERE user_id = '{0}' AND friend_id = '{1}'".format(uid, friend_id))
+			cursor.execute("DELETE FROM Friends WHERE user_id = '{0}' AND friend_id = '{1}'".format(friend_id, uid))
+			conn.commit()
+			return render_template('hello.html', name=flask_login.current_user.id, message='Friend Removed!')
+		else:
+			return render_template('hello.html', name=flask_login.current_user.id, message='Error #001-action')
+
 	else:
 		return render_template('friends.html', currentFriendList = currentFriendList)
 

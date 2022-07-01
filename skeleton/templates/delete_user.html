@@ -1,0 +1,17 @@
+<head>
+    <title> Delete Profile</title>
+  </head>
+  <body>
+    <h1> Delete Profile & Account</h1>
+
+    <form method="post" enctype="multipart/form-data" action="/delete_user">
+
+        <label for="email">Enter your email to confirm:</label>
+        <input type="email" name="conf_email" required='true' />
+
+        <input type="submit" value="Delete" />
+
+        <p>Changed your mind? Go back <a href='/'>home!</a></p>
+    </form>
+
+  </body>

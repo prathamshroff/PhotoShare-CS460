@@ -75,6 +75,9 @@ A new page looks like this:
 def new_page_function():
 	return new_page_html
 '''
+@app.route('/accountExists')
+def accountExists():
+	return render_template('accountExists.html')
 
 @app.route('/friends', methods=['GET', 'POST'])
 @flask_login.login_required
@@ -168,8 +171,9 @@ def register_user():
 		return render_template('hello.html', name=email, message='Account Created!')
 	else:
 		print("couldn't find all tokens")
-		return render_template('register.html', supress='False')
-		return flask.redirect(flask.url_for('register'))
+		return flask.redirect(flask.url_for('accountExists'))
+		#return render_template('hello.html', message='Account exists. Login or create un')
+		#return flask.redirect(flask.url_for('hello', message='Account exists.'))
 
 def getUsersPhotos(uid):
 	cursor = conn.cursor()

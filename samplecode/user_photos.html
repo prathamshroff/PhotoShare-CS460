@@ -1,0 +1,114 @@
+<!doctype html>
+
+{% if message %}
+<h2>{{message}}!</h2>
+{% endif %}
+
+<title>{{user[1]}} {{album[1]}} Photos</title>
+
+
+<!-- Display the photos caption, tags, then photo -->
+<!-- (picture_id, user_id, album_id, imgdata, caption) -->
+<!-- album_id,album_name,doc,user_id -->
+<!--user_id,email; user is the owner of this album-->
+<!--tags, likes, comments(comment_id, comment_date, comment_txt, commenter_email)-->
+<h2>Photos in Album {{album[1]}} of {{user[1]}}:</h2>
+{% for photo in photos %}
+  {{photo[4]}} <br />
+  
+  {% set tags_str = [] %}
+  {% for tag in tags[loop.index0] %}
+    {% if tag %}
+      <a href='/tag-{{tag[0]}}'>{{tag[0]}}</a> 
+      {% if tags_str.append(tag[0]) %}
+      {% endif %}
+    {% endif %}
+  {% endfor %} <br />
+  
+  <img src='data:image/jpg;base64, {{ base64.b64encode(photo[3]).decode("ascii") }}'
+    style = "object-fit:scale-down; width:200px;
+      height:300px; border: solid 1px #CCC"/>
+  
+  {% if my %} 
+    <!--This is my own picture, there should be delete and edit buttons-->
+    <!-- delete or rename-->
+    <form method="post" enctype="multipart/form-data" action="/user{{user[0]}}/album{{album[0]}}">
+      <input type ="hidden" name = "picture_id" value="{{photo[0]}}">
+      <input type ="hidden" name = "delete" value=True>
+      <input type="submit" value="Delete" />
+    </form>
+    
+    <!-- modify caption -->
+    <input type="button" id="edit_caption{{photo[0]}}" style="display: block;" name="edit_caption" value="Edit Caption" onclick="EditCaptionButton({{photo[0]}})" />
+    <form id="CaptionForm{{photo[0]}}" style="display: none;" method="post" enctype="multipart/form-data" action="/user{{user[0]}}/album{{album[0]}}">
+      <label for="edit_caption">Enter new caption:</label>
+      <input type="text" name="edit_caption" value="{{photo[4]}}" required = 'true'>
+      <input type ="hidden" name = "picture_id" value="{{photo[0]}}">
+      <input type="submit" value="Post caption" />
+    </form>
+
+    <!-- modify tags -->
+    
+    <input type="button" id="edit_tags{{photo[0]}}" style="display: block;" name="edit_tags" value="Edit Tags" onclick="EditTagsButton({{photo[0]}})" />
+    
+    <form id="TagsForm{{photo[0]}}" style="display: none;" method="post" enctype="multipart/form-data" action="/user{{user[0]}}/album{{album[0]}}">
+      <label for="edit_tags">Enter new tags (separated by whitespaces):</label>
+      <input type="text" name="edit_tags" value="{{tags_str|join(' ')}}" required = 'true'>
+      <input type ="hidden" name = "picture_id" value="{{photo[0]}}">
+      <input type="submit" value="Post tags" />
+    </form>
+
+  {% endif %}
+
+  <br />
+  <form method="post" enctype="multipart/form-data" action="/user{{user[0]}}/album{{album[0]}}">
+    <input type ="hidden" name = "picture_id" value="{{photo[0]}}">
+    <input type="submit" value="Like" />
+  </form>
+
+  {% if not my %}
+  <form method="post" enctype="multipart/form-data" action="/user{{user[0]}}/album{{album[0]}}">
+    <label for="comment">Comment:</label>
+    <input type ="hidden" name = "picture_id" value="{{photo[0]}}">
+    <input type="text" name="comment" required='true' />
+    <input type="submit" value="Post"/>
+  </form>
+  {% endif %}
+  
+  Liked by {{likens[loop.index0]}} people <br />
+  {% for like in likes[loop.index0] %}
+    {% if like %}
+    {{like[0]}} liked this photo <br />
+    {% endif %}
+  {% endfor %} 
+  {% for comment in comments[loop.index0] %}
+    {% if comment %}
+      {{comment[3]}} commented on {{comment[1]}}: {{comment[2]}} <br />
+    {% endif %}
+  {% endfor %} 
+
+  <br />
+  <br />
+{% endfor %}
+
+
+<script>
+  function EditCaptionButton(pid) {
+    document.getElementById('CaptionForm'+pid).style.display = 'block';
+    document.getElementById('edit_caption'+pid).style.display = 'none';
+  }
+  
+  function EditTagsButton(pid) {
+    document.getElementById('TagsForm'+pid).style.display = 'block';
+    document.getElementById('edit_tags'+pid).style.display = 'none';
+  }
+</script>
+
+
+
+<br />
+<br />
+<li><a href='/user{{user[0]}}'>Back to Profile of {{user[1]}}</a></li>
+<li><a href='/lobby'>Lobby</a> <br /></li>
+<li><a href='/'>Home</a></li>
+

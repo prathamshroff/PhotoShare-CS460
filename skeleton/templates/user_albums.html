@@ -4,20 +4,32 @@
   <h2>{{message}}!</h2>
 {% endif %}
 
-<title>{{user[1]}} Profile</title>
+<title>Profile of {{user[1]}}</title>
 
 
-<!-- Displays albums in /profile
+  <!-- Displays albums in /profile
       album=(album_id, album_name, doc, user_id )
       user = user_id, email-->
-<h2>Albums of {{user[1]}}:</h2>
-<ul>
-  {% for album in albums %}
+
+{% if albums %}      
+  <h2>Albums of {{user[1]}}:</h2>
+  <ul>
+    {% for album in albums %}
       <li><a href='/user{{user[0]}}/album{{album[0]}}'>{{album[1]}}</a></li>
-  {% endfor %}
-</ul>
+    {% endfor %}
+  </ul>
+{% endif %}      
+
+
+<h2>Create Album</h2>
+
+    <form method="post" enctype="multipart/form-data" action="/user_albums">
+
+      <label for="albumName">Unique Album Name:</label>
+      <input type="text" name = "albumName" /><br />
+      <input type="submit" value="Create!" />
+    </form>
 
 <ul>
-  <li><a href='/lobby'>Lobby</a></li>
   <li><a href='/'>Home</a></li>
 </ul>

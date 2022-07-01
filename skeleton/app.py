@@ -75,6 +75,29 @@ A new page looks like this:
 def new_page_function():
 	return new_page_html
 '''
+
+@app.route('/user_photos')
+@flask_login.login_required
+def user_photos():
+	return render_template('user_photos.html')
+
+@app.route('/user_albums')
+@flask_login.login_required
+def user_albums():
+	name=flask_login.current_user.id
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	return render_template('user_albums.html', user = (uid, name))
+
+@app.route('/create_album', methods=['GET', 'POST'])
+@flask_login.login_required
+def create_album():
+	if request.method == 'POST':
+		return render_template('create_album.html')
+	else:
+		return render_template('create_album.html')
+
+
+
 @app.route('/accountExists')
 def accountExists():
 	return render_template('accountExists.html')

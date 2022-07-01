@@ -23,8 +23,8 @@ CREATE TABLE Friends (
 
 CREATE TABLE Albums (
   album_id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  date_created DATE NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  date_created DATETIME DEFAULT NOW(),
   user_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
   UNIQUE KEY albumid (user_id, name)

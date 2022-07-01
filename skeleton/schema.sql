@@ -32,11 +32,12 @@ CREATE TABLE Albums (
 
 
 CREATE TABLE Pictures (
-  imgdata VARCHAR(255),
+  imgdata longblob,
   user_id INT NOT NULL,
   caption VARCHAR(255) NOT NULL,
   picture_id INT AUTO_INCREMENT UNIQUE PRIMARY KEY,
   album_id INT,
+  INDEX upid_idx (user_id),
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
   FOREIGN KEY (album_id) REFERENCES Albums(album_id) ON DELETE CASCADE
 );

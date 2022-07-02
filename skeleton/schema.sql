@@ -24,7 +24,7 @@ CREATE TABLE Friends (
 CREATE TABLE Albums (
   album_id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
-  date_created DATETIME DEFAULT NOW(),
+  date_created DATETIME NOT NULL DEFAULT NOW(),
   user_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
   UNIQUE KEY albumid (user_id, name)
@@ -35,7 +35,7 @@ CREATE TABLE Pictures (
   imgdata longblob,
   user_id INT NOT NULL,
   caption VARCHAR(255) NOT NULL,
-  picture_id INT AUTO_INCREMENT UNIQUE PRIMARY KEY,
+  picture_id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
   album_id INT,
   INDEX upid_idx (user_id),
   FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
@@ -43,16 +43,16 @@ CREATE TABLE Pictures (
 );
 
 CREATE TABLE Tags (
-  tagname VARCHAR(255) UNIQUE PRIMARY KEY,
-  picture_id INT,
+  tagname VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,
+  picture_id INT NOT NULL,
   FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Comments (
   comment_id INT NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
-  text VARCHAR(255),
+  text VARCHAR(255) NOT NULL,
   user_id INT DEFAULT '0',
-  Date DATE NOT NULL,
+  commentdate DATETIME NOT NULL DEFAULT NOW(),
   picture_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES Users(user_id),
   FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
@@ -60,7 +60,7 @@ CREATE TABLE Comments (
 
 CREATE TABLE Likes (
   picture_id INT NOT NULL,
-  user_id INT  DEFAULT '0',
+  user_id INT NOT NULL DEFAULT '0',
   PRIMARY KEY (picture_id, user_id),
   FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES Users(user_id)

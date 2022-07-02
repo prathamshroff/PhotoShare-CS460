@@ -93,7 +93,7 @@ def user_photos():
 	album = request.args.get('album')
 	photos = getUsersPhotosByAlbum(album[0])
 	#albums = getUsersAlbums(uid)
-	photos = getUsersPhotos(uid)
+	photos = getUsersPhotosByUser(uid)
 	tags = comments = likes = []
 	if request.method == 'POST':
 		return render_template('/user_photos.html', user=user, photos=photos, album=album)
@@ -119,7 +119,7 @@ def user_albums():
 def view_myphotos():
 	email=flask_login.current_user.id
 	uid = getUserIdFromEmail(flask_login.current_user.id)
-	photos = getUsersPhotos(uid)
+	photos = getUsersPhotosByUser(uid)
 	return render_template('viewphotos.html', user = (uid, email), photos=photos, base64=base64)
 
 @app.route('/viewphotos', methods=['GET', 'POST'])
@@ -152,10 +152,15 @@ def like_action():
 		conn.commit()
 		return redirect(request.referrer)
 	if action == 'seelikes':
-		cursor.execute("SELECT DISTINCT email FROM Users, Likes WHERE picture_id = '{0}'".format(picture_id))
+		cursor.execute("SELECT email FROM Users WHERE user_id IN (SELECT user_id FROM Likes WHERE picture_id = '{0}')".format(picture_id))
 		users = cursor.fetchall()
-		return render_template('userlist.html', users=users, count=len(users))
+		return render_template('userlist.html', users=users, count=len(users), message="Users who've liked")
 
+@app.route('/top10')
+def top10():
+	cursor.execute("SELECT email FROM Users U, Pictures P, Comments C WHERE (U.user_id=P.user_id OR U.user_id=C.user_id)".format(picture_id))
+	users = cursor.fetchall()
+	return render_template('userlist.html', users=users, message='Top 10');
 
 @app.route('/accountExists')
 def accountExists():
@@ -301,7 +306,7 @@ def getUsersAlbums(uid):
 	return cursor.fetchall() #NOTE return a list of tuples, [(album_id, name, date_created), ...]
 
 #by users, not by albums
-def getUsersPhotos(uid):
+def getUsersPhotosByUser(uid):
 	cursor = conn.cursor()
 	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
@@ -354,7 +359,7 @@ def upload_file():
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data,uid,caption))
 		conn.commit()
-		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
+		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html')

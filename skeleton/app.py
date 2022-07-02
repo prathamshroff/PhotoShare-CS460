@@ -152,7 +152,9 @@ def like_action():
 		conn.commit()
 		return redirect(request.referrer)
 	if action == 'seelikes':
-		return redirect(request.referrer)
+		cursor.execute("SELECT DISTINCT email FROM Users, Likes WHERE picture_id = '{0}'".format(picture_id))
+		users = cursor.fetchall()
+		return render_template('userlist.html', users=users, count=len(users))
 
 
 @app.route('/accountExists')

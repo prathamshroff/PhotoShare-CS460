@@ -1,0 +1,22 @@
+{% if message %}
+<h2>{{message}}!</h2>
+{% endif %}
+
+<title>List of Users</title>
+
+<h2>List of Users</h2>
+<ul>
+{% for user in users %}
+    <li>{{user[0]}}</li>
+{% endfor %}
+</ul>
+
+<h4>Count: {{count}}</h4>
+
+
+<br />
+<br />
+<br />
+<br />
+<li><a href='/viewphotos'>Back to Photos</a></li>
+<li><a href='/'>Home</a></li>

@@ -13,6 +13,7 @@
 <!--user_id,email; user is the owner of this album-->
 <!--tags, likes, comments(comment_id, comment_date, comment_txt, commenter_email)-->
 <h2>Photos in Album {{album[1]}} of {{user[1]}}:</h2>
+{% if photos %}
 {% for photo in photos %}
   {{photo[4]}} <br />
   
@@ -90,6 +91,7 @@
   <br />
   <br />
 {% endfor %}
+{% endif %}
 
 
 <script>

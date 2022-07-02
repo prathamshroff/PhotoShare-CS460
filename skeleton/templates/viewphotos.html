@@ -1,0 +1,18 @@
+{% if message %}
+<h2>{{message}}!</h2>
+{% endif %}
+
+<title>View All Photos</title>
+
+<h2>View All Photos</h2>
+
+<!-- photos(imgdata, user_id, caption, picture_id, album_id)-->
+{% for photo in photos %}
+  {{photo[2]}} <br />
+  
+  <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'
+    style = "object-fit:scale-down; width:200px;
+      height:300px; border: solid 1px #CCC"/>
+
+{% endfor %}
+

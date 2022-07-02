@@ -76,25 +76,47 @@ def new_page_function():
 	return new_page_html
 '''
 
-@app.route('/user_photos')
+@app.route('/user_photos', methods=['GET', 'POST'])
 @flask_login.login_required
 def user_photos():
-	return render_template('user_photos.html')
+	user = request.args.get('user')
+	uid = user[0]
+	email=flask_login.current_user.id
+	#if email != user[1]:
+	#	print(email)
+	#	return render_template('hello.html', name=flask_login.current_user.id, message='Email Mismatch Error #001')
+	album = request.args.get('album')
+	photos = getUsersPhotosByAlbum(album[0])
+	#albums = getUsersAlbums(uid)
+	photos = getUsersPhotos(uid)
+	tags = comments = likes = []
+	if request.method == 'POST':
+		return render_template('/user_photos.html', user=user, photos=photos, album=album)
+	else:
+		return render_template('/user_photos.html', user=user, photos=photos, album=album, tags=tags, likes=likes, comments=comments, base64=base64)
 
-@app.route('/user_albums')
+@app.route('/user_albums', methods=['GET', 'POST'])
 @flask_login.login_required
 def user_albums():
-	name=flask_login.current_user.id
+	email=flask_login.current_user.id
 	uid = getUserIdFromEmail(flask_login.current_user.id)
-	return render_template('user_albums.html', user = (uid, name))
+	albums = getUsersAlbums(uid)
+	if request.method == 'POST':
+		albumName = request.form.get('albumName')
+		cursor.execute("INSERT INTO Albums(name, user_id) VALUES ('{0}', '{1}')".format(albumName, uid))
+		conn.commit()
+		return render_template('user_albums.html', name=flask_login.current_user.id, user = (uid, email), message='New Album Added!', albums = getUsersAlbums(uid))
+	else:
+		return render_template('user_albums.html', user = (uid, email), albums = albums)
 
-@app.route('/create_album', methods=['GET', 'POST'])
+@app.route('/viewphotos', methods=['GET', 'POST'])
 @flask_login.login_required
 def create_album():
+	photos = getAllPhotos()
 	if request.method == 'POST':
-		return render_template('create_album.html')
+		return render_template('viewphotos.html')
 	else:
-		return render_template('create_album.html')
+		return render_template('viewphotos.html', photos=photos, base64=base64)
 
 
 
@@ -108,34 +130,27 @@ def delete_user():
 	if request.method == 'POST':
 		cursor = conn.cursor()
 		uid = getUserIdFromEmail(flask_login.current_user.id)
-
 		conf_email = request.form.get('conf_email')
-		cursor = conn.cursor()
-		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(conf_email))
-		conf_id = cursor.fetchall()[0][0]
+		conf_id = getUserIdFromEmail(conf_email)
 
 		if uid == conf_id:
 			cursor.execute("DELETE FROM Users WHERE user_id = '{0}'".format(uid))
 			conn.commit()
 			return render_template('hello.html', message='Profile & Account Deleted!')
-
 	#The method is GET so we return a HTML form to delete user.
 	else:
 		return render_template('delete_user.html')
 
 @app.route('/friends', methods=['GET', 'POST'])
 @flask_login.login_required
-def add_friend():
+def friends():
 	cursor = conn.cursor()
 	uid = getUserIdFromEmail(flask_login.current_user.id)
-	cursor.execute("SELECT email FROM Users WHERE user_id IN (SELECT friend_id FROM Friends WHERE user_id = '{0}')".format(uid))
-	currentFriendList = cursor.fetchall()
+	currentFriendList = getUsersFriends(uid)
 	
 	if request.method == 'POST':
 		friendEmail = request.form.get('friendEmail')
-		cursor = conn.cursor()
-		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(friendEmail))
-		friend_id = cursor.fetchall()[0][0]
+		friend_id = getUserIdFromEmail(friendEmail)
 
 		# edge case - trying to add/remove yourself
 		if uid == friend_id:
@@ -150,7 +165,6 @@ def add_friend():
 			return render_template('hello.html', name=flask_login.current_user.id, message='Friend Added!')
 
 		elif action == 'Remove':
-
 			# edge case - tryinhg to remove someone who is not yet friend
 			if friend_id not in currentFriendList:
 				return render_template('friends.html', name=flask_login.current_user.id, message="You cannot unfriend someone who is not your friend!")
@@ -164,8 +178,6 @@ def add_friend():
 
 	else:
 		return render_template('friends.html', currentFriendList = currentFriendList)
-
-
 
 #Given routes and code below
 
@@ -241,14 +253,35 @@ def register_user():
 		#return render_template('hello.html', message='Account exists. Login or create un')
 		#return flask.redirect(flask.url_for('hello', message='Account exists.'))
 
+def getUsersFriends(uid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT email FROM Users WHERE user_id IN (SELECT friend_id FROM Friends WHERE user_id = '{0}')".format(uid))
+	return cursor.fetchall()
+
+def getUsersAlbums(uid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT album_id, name, date_created FROM Albums WHERE user_id = '{0}'".format(uid))
+	return cursor.fetchall() #NOTE return a list of tuples, [(album_id, name, date_created), ...]
+
+#by users, not by albums
 def getUsersPhotos(uid):
 	cursor = conn.cursor()
 	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
 
+def getUsersPhotosByAlbum(album_id):
+	cursor = conn.cursor()
+	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE album_id = '{0}'".format(album_id))
+	return cursor.fetchall()
+
+def getAllPhotos():
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM Pictures")
+	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
 def getUserIdFromEmail(email):
 	cursor = conn.cursor()
-	cursor.execute("SELECT user_id  FROM Users WHERE email = '{0}'".format(email))
+	cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(email))
 	return cursor.fetchone()[0]
 
 def isEmailUnique(email):
@@ -290,12 +323,10 @@ def upload_file():
 		return render_template('upload.html')
 #end photo uploading code
 
-
 #default page
 @app.route("/", methods=['GET'])
 def hello():
 	return render_template('hello.html', message='Welecome to Photoshare')
-
 
 if __name__ == "__main__":
 	#this is invoked when in the shell  you run

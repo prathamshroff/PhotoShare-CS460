@@ -15,7 +15,9 @@
   <h2>Albums of {{user[1]}}:</h2>
   <ul>
     {% for album in albums %}
-      <li><a href='/user{{user[0]}}/album{{album[0]}}'>{{album[1]}}</a></li>
+       <!-- <li><a href='/user{{user[0]}}/album{{album[0]}}'>{{album[1]}}</a></li> -->
+      <li><a href="{{ url_for('user_photos', user=user, album=album) }}">{{album[1]}}</a></li>
+
     {% endfor %}
   </ul>
 {% endif %}      
@@ -26,7 +28,7 @@
     <form method="post" enctype="multipart/form-data" action="/user_albums">
 
       <label for="albumName">Unique Album Name:</label>
-      <input type="text" name = "albumName" /><br />
+      <input type="text" name = "albumName" />
       <input type="submit" value="Create!" />
     </form>
 

@@ -43,6 +43,11 @@ def getUserList():
 	return cursor.fetchall()
 
 class User(flask_login.UserMixin):
+	def has_liked_photo(self, picture_id):
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		cursor = conn.cursor()
+		cursor.execute("SELECT COUNT(*) FROM Likes WHERE user_id ='{0}' AND picture_id='{1}'".format(uid, picture_id))
+		return cursor.fetchone()[0]
 	pass
 
 @login_manager.user_loader
@@ -109,15 +114,45 @@ def user_albums():
 	else:
 		return render_template('user_albums.html', user = (uid, email), albums = albums)
 
-@app.route('/viewphotos', methods=['GET', 'POST'])
+@app.route('/view_myphotos', methods=['GET', 'POST'])
 @flask_login.login_required
-def create_album():
+def view_myphotos():
+	email=flask_login.current_user.id
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	photos = getUsersPhotos(uid)
+	return render_template('viewphotos.html', user = (uid, email), photos=photos, base64=base64)
+
+@app.route('/viewphotos', methods=['GET', 'POST'])
+def viewphotos():
+	email=flask_login.current_user.id
+	uid = getUserIdFromEmail(flask_login.current_user.id)
 	photos = getAllPhotos()
 	if request.method == 'POST':
 		return render_template('viewphotos.html')
 	else:
-		return render_template('viewphotos.html', photos=photos, base64=base64)
+		return render_template('viewphotos.html', user = (uid, email), photos=photos, base64=base64)
 
+
+# https://stackoverflow.com/questions/52665707/how-do-i-implement-a-like-button-function-to-posts-in-python-flask
+@app.route('/like_action')
+@flask_login.login_required
+def like_action():
+	email=flask_login.current_user.id
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	picture_id=request.args.get('picture_id')
+	action=request.args.get('action')
+	action = str(action)
+	cursor = conn.cursor()
+	if action == 'like':
+		cursor.execute("INSERT INTO Likes(user_id, picture_id) VALUES('{0}','{1}')".format(uid, picture_id))
+		conn.commit()
+		return redirect(request.referrer)
+	if action == 'unlike':
+		cursor.execute("DELETE FROM Likes WHERE user_id = '{0}' AND picture_id = '{1}'".format(uid, picture_id))
+		conn.commit()
+		return redirect(request.referrer)
+	if action == 'seelikes':
+		return redirect(request.referrer)
 
 
 @app.route('/accountExists')

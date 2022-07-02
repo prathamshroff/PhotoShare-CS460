@@ -1,18 +1,55 @@
+<style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: auto auto auto;
+      grid-template-rows: auto auto;
+      gap: 10px;
+      background-color: #ffffff;
+      padding: 10px;
+    }
+</style>
+
 {% if message %}
 <h2>{{message}}!</h2>
 {% endif %}
 
-<title>View All Photos</title>
+<title>View Photos</title>
 
-<h2>View All Photos</h2>
+<h2><a href="{{ url_for('viewphotos') }}">View All Photos</a></h2>
 
+<h4><a href="{{ url_for('view_myphotos') }}">View My Photos</a></h4>
+
+<div>
 <!-- photos(imgdata, user_id, caption, picture_id, album_id)-->
+<div>
 {% for photo in photos %}
-  {{photo[2]}} <br />
-  
-  <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'
+
+    <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'
     style = "object-fit:scale-down; width:200px;
       height:300px; border: solid 1px #CCC"/>
+    <br /><br />
+    {{photo[2]}}
 
+    {% if current_user.has_liked_photo(photo[3]) %}
+        <a href="{{ url_for('like_action', picture_id=photo[3], action='unlike') }}">Unlike</a>
+    {% else %}
+        <a href="{{ url_for('like_action', picture_id=photo[3], action='like') }}">Like</a>
+    {% endif %}
+
+    <a href="{{ url_for('like_action', picture_id=photo[3], action='seelikes') }}">See Likes</a>
+
+    <br /><br />
 {% endfor %}
+</div>
+</div>
+
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<li><a href='/profile'>Profile</a></li>
+<li><a href='/'>Home</a></li>
+
 

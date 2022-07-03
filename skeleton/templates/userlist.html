@@ -5,18 +5,29 @@
 <title>List of Users</title>
 
 <h2>List of Users</h2>
-<ul>
+<ol>
 {% for user in users %}
     <li>{{user[0]}}</li>
 {% endfor %}
-</ul>
+</ol>
 
+{% if count %}
 <h4>Count: {{count}}</h4>
+{% endif %}
 
 
 <br />
 <br />
 <br />
 <br />
-<li><a href='/viewphotos'>Back to Photos</a></li>
-<li><a href='/'>Home</a></li>
+
+
+<ul>
+    <li><a href='/upload'>Upload a photo</a> </li>
+    <li><a href='/viewphotos'>View All Photos</a> </li>
+    <li><a href='/user_albums'>View Albums</a> </li>
+    <li><a href='/friends'>Add/See/Remove Friends</a> </li>
+    <li><a href='/delete_user'>Delete Profile</a> </li>
+    <li><a href='/logout'>Logout</a></li>
+    <li><a href='/'>Home</a></li>
+</ul>

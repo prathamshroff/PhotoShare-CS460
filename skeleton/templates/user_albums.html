@@ -23,9 +23,15 @@
 {% endif %}      
 
 
-<h2>Create Album</h2>
+<h2>Add/Remove Album</h2>
 
     <form method="post" enctype="multipart/form-data" action="/user_albums">
+
+      <label for="action">Action:</label>
+            <input type="radio" id="Add" name="action" value="Add">
+            <label for="action">Add</label>
+            <input type="radio" id="Remove" name="action" value="Remove">
+            <label for="action">Remove</label><br>
 
       <label for="albumName">Unique Album Name:</label>
       <input type="text" name = "albumName" />

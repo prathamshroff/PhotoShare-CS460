@@ -7,6 +7,7 @@
       background-color: #ffffff;
       padding: 10px;
     }
+    
 </style>
 
 {% if message %}
@@ -31,9 +32,11 @@
     {{photo[2]}}
 
     {% if current_user.has_liked_photo(photo[3]) %}
-        <a href="{{ url_for('like_action', picture_id=photo[3], action='unlike') }}">Unlike</a>
+        <a href="{{ url_for('like_action', picture_id=photo[3], action='unlike') }}"
+        style = "text-decoration: none; color: inherit"> &#9829;</a>
     {% else %}
-        <a href="{{ url_for('like_action', picture_id=photo[3], action='like') }}">Like</a>
+        <a href="{{ url_for('like_action', picture_id=photo[3], action='like') }}"
+        style = "text-decoration: none; color: inherit"> &#9825;</a>
     {% endif %}
 
     <a href="{{ url_for('like_action', picture_id=photo[3], action='seelikes') }}">See Likes</a>

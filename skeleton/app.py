@@ -108,9 +108,22 @@ def user_albums():
 	albums = getUsersAlbums(uid)
 	if request.method == 'POST':
 		albumName = request.form.get('albumName')
-		cursor.execute("INSERT INTO Albums(name, user_id) VALUES ('{0}', '{1}')".format(albumName, uid))
-		conn.commit()
-		return render_template('user_albums.html', name=flask_login.current_user.id, user = (uid, email), message='New Album Added!', albums = getUsersAlbums(uid))
+		action=request.form.get('action')
+		action = str(action)
+		if action == 'Add':
+			for album in albums:
+				if albumName == album[1]:
+					return render_template('user_albums.html', name=flask_login.current_user.id, user = (uid, email), message="You cannot add album with same name again.", albums = albums)	
+			# if albumName in albums: return render_template('user_albums.html', name=flask_login.current_user.id, message="You cannot add album with same name again.")
+			cursor.execute("INSERT INTO Albums(name, user_id) VALUES ('{0}', '{1}')".format(albumName, uid))
+			conn.commit()
+			return render_template('user_albums.html', name=flask_login.current_user.id, user = (uid, email), message='New Album Added!', albums = getUsersAlbums(uid))
+		if action == 'Remove':
+			# edge case - trying to remove album not yet added
+			#if albumName not in albums: return render_template('user_albums.html', name=flask_login.current_user.id, user = (uid, email), message="You cannot remove album you haven't added yet.")
+			cursor.execute("DELETE FROM Albums WHERE user_id = '{0}' AND name = '{1}'".format(uid, albumName))
+			conn.commit()
+			return render_template('user_albums.html', name=flask_login.current_user.id, user = (uid, email), message='Album Removed!', albums = getUsersAlbums(uid))
 	else:
 		return render_template('user_albums.html', user = (uid, email), albums = albums)
 
@@ -158,9 +171,9 @@ def like_action():
 
 @app.route('/top10')
 def top10():
-	cursor.execute("SELECT email FROM Users U, Pictures P, Comments C WHERE (U.user_id=P.user_id OR U.user_id=C.user_id)".format(picture_id))
+	cursor.execute("SELECT email, contributions FROM Users U, (SELECT user_id, count(*) AS contributions FROM ((SELECT user_id FROM Pictures) UNION ALL (SELECT C.user_id FROM Comments C WHERE C.picture_id NOT IN (SELECT P.picture_id FROM Pictures P WHERE P.user_id=C.user_id))) AS counted GROUP BY user_id LIMIT 10) as top10 WHERE U.user_id = top10.user_id ORDER BY contributions DESC")
 	users = cursor.fetchall()
-	return render_template('userlist.html', users=users, message='Top 10');
+	return render_template('userlist.html', users=users, message='Top 10 in User Activity')
 
 @app.route('/accountExists')
 def accountExists():

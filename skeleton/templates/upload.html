@@ -7,10 +7,15 @@
             <h1>Upload a photo to Photoshare</h1>
         </div>
             <form method="post" enctype="multipart/form-data" action="/upload">
+
                 <label for="photo">Select photo:</label>
                 <input type="file" name="photo" required='true' /><br />
+
                 <label for="caption">Please caption:</label>
                 <input type="text" name="caption" required='true' /><br />
+
+                <label for="tags">Please enter tags (all-lowercase, one space in between):</label>
+                <input type="text" name="tags" required='false' /><br />
                 
 
                 <input type="submit" value="Upload" />

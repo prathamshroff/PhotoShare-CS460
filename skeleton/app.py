@@ -139,11 +139,18 @@ def view_myphotos():
 def viewphotos():
 	email=flask_login.current_user.id
 	uid = getUserIdFromEmail(flask_login.current_user.id)
+	'''
+	try:
+		tag_id=request.args.get('tag_id')
+		photos = getUsersPhotosByTag(tag_id)
+	except:
+		photos = getAllPhotos() '''
 	photos = getAllPhotos()
+	tags = getAllTags()
 	if request.method == 'POST':
 		return render_template('viewphotos.html')
 	else:
-		return render_template('viewphotos.html', user = (uid, email), photos=photos, base64=base64)
+		return render_template('viewphotos.html', user = (uid, email), photos=photos, tags=tags, base64=base64)
 
 
 # https://stackoverflow.com/questions/52665707/how-do-i-implement-a-like-button-function-to-posts-in-python-flask
@@ -321,7 +328,7 @@ def getUsersAlbums(uid):
 #by users, not by albums
 def getUsersPhotosByUser(uid):
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
+	cursor.execute("SELECT * FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
 
 def getUsersPhotosByAlbum(album_id):
@@ -329,10 +336,20 @@ def getUsersPhotosByAlbum(album_id):
 	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE album_id = '{0}'".format(album_id))
 	return cursor.fetchall()
 
+def getUsersPhotosByTag(tag_id):
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM Pictures WHERE picture_id IN (SELECT DISTINCT picture_id FROM Tags WHERE tagname = '{0}')".format(tag_id))
+	return cursor.fetchall()
+
 def getAllPhotos():
 	cursor = conn.cursor()
 	cursor.execute("SELECT * FROM Pictures")
-	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+	return cursor.fetchall() 
+
+def getAllTags():
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM Tags")
+	return cursor.fetchall()
 
 def getUserIdFromEmail(email):
 	cursor = conn.cursor()

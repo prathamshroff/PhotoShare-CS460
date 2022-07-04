@@ -18,7 +18,14 @@
 
 <h2><a href="{{ url_for('viewphotos') }}">View All Photos</a></h2>
 
-<!-- <h4><a href="{{ url_for('view_myphotos') }}">View My Photos</a></h4> -->
+<h4><a href="{{ url_for('view_myphotos') }}">View My Photos</a></h4>
+
+{% if tags %}
+By Tag: 
+  {% for tag in tags %}
+    <a href="{{ url_for('viewphotos', tag_id = tag[0]) }}">{{tag[0]}}</a>
+  {% endfor %}
+{% endif %}
 
 <div>
 <!-- photos(imgdata, user_id, caption, picture_id, album_id)-->

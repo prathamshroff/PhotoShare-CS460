@@ -339,6 +339,11 @@ def getUserIdFromEmail(email):
 	cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(email))
 	return cursor.fetchone()[0]
 
+def getUserPhotoID(photo_data):
+	cursor = conn.cursor()
+	cursor.execute('''SELECT picture_id FROM Pictures WHERE imgdata = %s''', (photo_data))
+	return cursor.fetchone()[0]
+
 def isEmailUnique(email):
 	#use this to check if a email has already been registered
 	cursor = conn.cursor()
@@ -360,6 +365,30 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+@app.route('/modifyphoto', methods=['GET', 'POST'])
+@flask_login.login_required
+def modifyphoto():
+	if request.method == 'POST':
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		caption = request.form.get('caption')
+		tags = request.form.get('tags')
+		picture_id = request.form.get('photo id')
+
+		if len(caption) > 0:
+			cursor = conn.cursor()
+			cursor.execute('''UPDATE Pictures SET caption = %s WHERE picture_id = %s''', (caption, picture_id))
+			conn.commit()
+		if len(tags) > 0:
+			taglist = tags.split()
+			cursor = conn.cursor()
+			cursor.execute("DELETE FROM Tags WHERE picture_id = '{0}'".format(picture_id))
+			for tagname in taglist:
+				cursor.execute("INSERT INTO Tags(tagname, picture_id) VALUES ('{0}', '{1}')".format(tagname, picture_id))
+			conn.commit()
+		return render_template('hello.html', name=flask_login.current_user.id, message='Possible modifications made!')
+	else:
+		return render_template('modifyphoto.html')
+
 @app.route('/upload', methods=['GET', 'POST'])
 @flask_login.login_required
 def upload_file():
@@ -372,10 +401,14 @@ def upload_file():
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data,uid,caption))
 		conn.commit()
-
+		picture_id = getUserPhotoID(photo_data)
 		try:
 			tags = request.form.get('tags')
 			taglist = tags.split()
+			cursor = conn.cursor()
+			for tagname in taglist:
+				cursor.execute("INSERT INTO Tags(tagname, picture_id) VALUES ('{0}', '{1}')".format(tagname, picture_id))
+			conn.commit()
 		except:
 			return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', base64=base64)
 

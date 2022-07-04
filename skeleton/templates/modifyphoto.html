@@ -1,0 +1,41 @@
+<!doctype html>
+
+{% if message %}
+  <h4>{{message}}!</h4>
+{% endif %}
+
+<title>Modify a photo!</title>
+
+<div class="title">
+    <h1>Modify a photo on Photoshare</h1>
+</div>
+    <form method="post" enctype="multipart/form-data" action="/modifyphoto">
+
+        <label for="photo id">Type photo id (find <a href='/viewphotos'>here</a>):</label>
+        <input type="number" name="photo id" required='true' /><br />
+
+        <p> Change only what you want to change</p>
+
+        <label for="caption">Enter new caption:</label>
+        <input type="text" name="caption" required='false' /><br/>
+
+        <label for="tags">Enter new tags (all-lowercase, one space in between):</label>
+        <input type="text" name="tags" required='false' /><br/><br/>
+
+        <input type="submit" value="Modify" />
+    </form>
+
+
+<br/>
+<br/>
+<br/>
+<br/>
+<ul>
+    <li><a href='/upload'>Upload a photo</a> </li>
+    <li><a href='/viewphotos'>View All Photos</a> </li>
+    <li><a href='/user_albums'>View Albums</a> </li>
+    <li><a href='/friends'>Add/See/Remove Friends</a> </li>
+    <li><a href='/delete_user'>Delete Profile</a> </li>
+    <li><a href='/logout'>Logout</a></li>
+    <li><a href='/'>Home</a></li>
+</ul>

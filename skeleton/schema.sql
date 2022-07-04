@@ -43,8 +43,9 @@ CREATE TABLE Pictures (
 );
 
 CREATE TABLE Tags (
-  tagname VARCHAR(255) NOT NULL UNIQUE PRIMARY KEY,
+  tagname VARCHAR(255) NOT NULL,
   picture_id INT NOT NULL,
+  PRIMARY KEY (tagname, picture_id),
   FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 );
 
